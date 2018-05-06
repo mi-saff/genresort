@@ -1,15 +1,28 @@
 import os
 import string
 import random
+import sys
 from nltk.corpus import stopwords
 
 def remove_stop_words(paragraph):
     s = set(stopwords.words('english'))
+    p = paragraph.split()
+    print(p)
+    for w in p:
+        if w not in s:
+            print(w)
     return filter(lambda w: not w in s, paragraph)
 
 def clean_paragraphs(paragraphs, fnum):
     clean = lambda x: x.decode('utf8').encode('ascii', errors='ignore').translate(string.maketrans("",""), string.punctuation).strip("\"").lower().split(" ")[0:-1]
-    new_paragraphs = [(clean(curr_paragraph), fnum) for curr_paragraph in paragraphs if len(clean(curr_paragraph)) >= 15 and len(clean(curr_paragraph)) < 200]
+    s = set(stopwords.words('english'))
+    new_paragraphs = []
+    for paragraph in paragraphs:
+        new_paragraph = clean(paragraph)
+        removed_stop_words = [x for x in new_paragraph if x not in s]
+        if len(removed_stop_words) >= 15:
+            new_paragraphs.append((removed_stop_words[:15], fnum))
+    #new_paragraphs = [(clean(curr_paragraph), fnum) for curr_paragraph in paragraphs if len(clean(curr_paragraph)) > 20]
     return new_paragraphs
 
 def get_paragraphs(filename, fnum):
@@ -36,6 +49,8 @@ def shuffle(x, y, batch_size):
     return a[:batch_size], b[:batch_size]
 
 def main(folder_name):
+    #print("hello")
+    #print(clean_paragraphs([sys.argv[1]], 1))
     fnum = 0
     tot_paragraphs = []
     main_folder = "./" + folder_name + "/"
@@ -47,3 +62,6 @@ def main(folder_name):
                 tot_paragraphs += get_paragraphs(fullname, fnum)
     #tot_paragraphs += get_paragraphs("./data/crime/baskervilles.txt", 2)
     return tot_paragraphs
+
+paragraphs = main("bigdata")
+print paragraphs[0]

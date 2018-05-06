@@ -1,16 +1,14 @@
-#Inspired by HW2
-
 import tensorflow as tf
 import time
 import os
 import math
 import numpy as np
-import generate_data
+import generate_data_2
 import embedding
 from model import Model
 
 class Config(object):
-    threshold = 20
+    threshold = 15
     embed_size = 50
     batch_size = 500
     label_size = 5
@@ -27,13 +25,13 @@ class ForwardModel(Model):
 
         embedding_dict = embedding.word_to_embedding()
 
-        self.X_train, self.y_train = embedding.generate_embeddings(generate_data.main("bigdata"), \
+        self.X_train, self.y_train = embedding.generate_embeddings(generate_data_2.main("bigdata"), \
                 embedding_dict, self.config.embed_size, self.config.threshold)
-        self.X_dev, self.y_dev = embedding.generate_embeddings(generate_data.main("bigdata"), \
+        self.X_dev, self.y_dev = embedding.generate_embeddings(generate_data_2.main("bigdata"), \
                 embedding_dict, self.config.embed_size, self.config.threshold)
-        self.X_test, self.y_test = embedding.generate_embeddings(generate_data.main("bigtest"), \
+        self.X_test, self.y_test = embedding.generate_embeddings(generate_data_2.main("bigtest"), \
                 embedding_dict, self.config.embed_size, self.config.threshold)
-        self.X_test, self.y_test = generate_data.shuffle(self.X_test, self.y_test, 100)
+        self.X_test, self.y_test = generate_data_2.shuffle(self.X_test, self.y_test, 100)
 
     def add_placeholders(self):
         self.input_placeholder = tf.placeholder(tf.float32, shape=[None, Config.embed_size])
@@ -96,7 +94,7 @@ class ForwardModel(Model):
         total_correct_examples = 0
         total_processed_examples = 0
         total_steps = len(orig_X) / self.config.batch_size
-        x, y = generate_data.shuffle(orig_X, orig_y, self.config.batch_size)
+        x, y = generate_data_2.shuffle(orig_X, orig_y, self.config.batch_size)
         for step in range(len(x)):
             feed = self.create_feed_dict(input_batch = x, label_batch = y)
             loss, total_correct, _ = session.run(
@@ -112,7 +110,7 @@ class ForwardModel(Model):
         results = []
         total_correct_examples = 0
         total_processed_examples = 0
-        x, y = generate_data.shuffle(X, y, batch_size = self.config.batch_size)
+        x, y = generate_data_2.shuffle(X, y, batch_size = self.config.batch_size)
         for step in range(len(x)):
             feed = self.create_feed_dict(input_batch = x, label_batch = y)
             loss, preds, correct = session.run(
@@ -152,24 +150,24 @@ def run_model(hl, lr):
                 if val_loss < best_val_loss:
                   best_val_loss = val_loss
                   best_val_epoch = epoch
-                  saver.save(session, './weights/feedforward.weights')
+                  saver.save(session, './weights/cleanfeedforward.weights')
                 if epoch - best_val_epoch > config.early_stopping:
                   break
                 print "Total time: {}".format(time.time() - start)
 
-            saver.restore(session, './weights/feedforward.weights')
+            saver.restore(session, './weights/cleanfeedforward.weights')
             print "Test"
             print "=-=-="
             print "Writing predictions"
             _, predictions, acc = model.predict(session, model.X_test, model.y_test)
             print "The model achieved " + str(round(acc * 100, 2)) + "% on the test set"
             print predictions, model.y_test
-            with open("./test_results/forward_data.txt", "a") as fp:
+            with open("./test_results/clean_forward_data.txt", "a") as fp:
                 fp.write("Hidden Layer Size: {}, Learning Rate: {}, Training Loss: {}, Test Acc: {}".format(hl, lr, best_val_loss, acc))
                 fp.write("\n")
 
 if __name__ == "__main__":
     numbers = [.0005, .0006, .0007, .0008, .0009, .001, .002, .003, .004, .005]
-    for hl in range(30, 50, 10):
+    for hl in range(10, 50, 10):
         for lr in numbers:
             run_model(hl, lr)

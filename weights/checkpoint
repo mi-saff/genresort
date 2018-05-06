@@ -1,2 +1,2 @@
-model_checkpoint_path: "feedforward.weights"
-all_model_checkpoint_paths: "feedforward.weights"
+model_checkpoint_path: "cleanfeedforward.weights"
+all_model_checkpoint_paths: "cleanfeedforward.weights"
